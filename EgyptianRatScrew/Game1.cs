@@ -3,8 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Devcade;
 
-// MAKE SURE YOU RENAME ALL PROJECT FILES FROM DevcadeGame TO YOUR YOUR GAME NAME
-namespace DevcadeGame
+namespace EgyptianRatScrew
 {
 	public class Game1 : Game
 	{
@@ -15,6 +14,10 @@ namespace DevcadeGame
 		/// Stores the window dimensions in a rectangle object for easy use
 		/// </summary>
 		private Rectangle windowSize;
+
+		private int x = 0;
+		private int y = 0;
+
 		
 		/// <summary>
 		/// Game constructor
@@ -45,10 +48,22 @@ namespace DevcadeGame
 			_graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
 			_graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
 			_graphics.ApplyChanges();
-#endif
+#endif	
 			#endregion
 			
 			// TODO: Add your initialization logic here
+			InputManager.SetWhileHeld(Input.ArcadeButtons.StickUp, () => y--);
+			InputManager.SetWhileHeld(Input.ArcadeButtons.StickDown, () => y++);
+			InputManager.SetWhileHeld(Input.ArcadeButtons.StickLeft, () => x--);
+			InputManager.SetWhileHeld(Input.ArcadeButtons.StickRight, () => x++);
+			InputManager.SetOnRelease(Input.ArcadeButtons.A1, () => { x = 0; y = 0; });
+			InputManager.MapKeyToButton(Keys.W, Input.ArcadeButtons.StickUp);
+			InputManager.MapKeyToButton(Keys.A, Input.ArcadeButtons.StickLeft);
+			InputManager.MapKeyToButton(Keys.S, Input.ArcadeButtons.StickDown); 
+			InputManager.MapKeyToButton(Keys.D, Input.ArcadeButtons.StickRight);
+			InputManager.MapKeyToButton(Keys.R, Input.ArcadeButtons.A1);
+
+			//InputManager.doThing = () => y++;
 
 			windowSize = GraphicsDevice.Viewport.Bounds;
 			
@@ -62,9 +77,7 @@ namespace DevcadeGame
 		{
 			_spriteBatch = new SpriteBatch(GraphicsDevice);
 
-			// TODO: use this.Content to load your game content here
-			// ex:
-			// texture = Content.Load<Texture2D>("fileNameWithoutExtension");
+			Asset.LoadContent(Content);
 		}
 
 		/// <summary>
@@ -86,6 +99,7 @@ namespace DevcadeGame
 			}
 
 			// TODO: Add your update logic here
+			InputManager.TickActions();
 
 			base.Update(gameTime);
 		}
@@ -101,6 +115,7 @@ namespace DevcadeGame
 			// Batches all the draw calls for this frame, and then performs them all at once
 			_spriteBatch.Begin();
 			// TODO: Add your drawing code here
+			_spriteBatch.Draw(Asset.PlayerCircle, new Vector2(x, y), Color.White);
 			
 			_spriteBatch.End();
 
