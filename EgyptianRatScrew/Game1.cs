@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Devcade;
+using EgyptianRatScrew.Card;
+using System;
 
 namespace EgyptianRatScrew
 {
@@ -63,7 +65,21 @@ namespace EgyptianRatScrew
 			InputManager.MapKeyToButton(Keys.D, Input.ArcadeButtons.StickRight);
 			InputManager.MapKeyToButton(Keys.R, Input.ArcadeButtons.A1);
 
-			//InputManager.doThing = () => y++;
+			Deck initial = Deck.GenerateFullDeck();
+			Console.WriteLine("Initial Deck: ");
+			foreach (var card in initial) {
+				Console.WriteLine(card);
+			}
+
+			Deck[] decks = initial.DealAll();
+			Console.WriteLine("\nDeck 1:");
+			foreach (var card in decks[0]) {
+				Console.WriteLine(card);
+			}
+			Console.WriteLine("\nDeck 2:");
+			foreach (var card in decks[1]) {
+				Console.WriteLine(card);
+			}
 
 			windowSize = GraphicsDevice.Viewport.Bounds;
 			
