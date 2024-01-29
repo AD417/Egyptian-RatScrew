@@ -20,12 +20,10 @@ public class Deck : LinkedList<Card> {
     public static Deck GenerateFullDeck(int decks = 1) {
         Deck cards = new();
 
-
-        var allValues = (CardValue[])Enum.GetValues(typeof(CardValue));
         var allFaces = (CardSuit[])Enum.GetValues(typeof(CardSuit));
 
         foreach (CardSuit suit in allFaces) {
-            foreach (CardValue value in allValues) {
+            for (int value = 1; value <= 13; value++) {
                 for (int i = 0; i < decks; i++) {
                     cards.AddLast(new Card(suit, value));
                 }
