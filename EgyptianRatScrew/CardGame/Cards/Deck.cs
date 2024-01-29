@@ -22,12 +22,12 @@ public class Deck : LinkedList<Card> {
 
 
         var allValues = (CardValue[])Enum.GetValues(typeof(CardValue));
-        var allFaces = (CardFace[])Enum.GetValues(typeof(CardFace));
+        var allFaces = (CardSuit[])Enum.GetValues(typeof(CardSuit));
 
-        foreach (CardFace face in allFaces) {
+        foreach (CardSuit suit in allFaces) {
             foreach (CardValue value in allValues) {
                 for (int i = 0; i < decks; i++) {
-                    cards.AddLast(new Card(face, value));
+                    cards.AddLast(new Card(suit, value));
                 }
             }
         }
@@ -116,8 +116,10 @@ public class Deck : LinkedList<Card> {
     ///     A second "deck" of cards to add to the end of this one. 
     /// </param>
     public void TakeAll(Deck pile) {
-        for (var card = pile.First; card != null; card = card.Next) {
-            pile.AddLast(card.Value);
+        var card = pile.First;
+        for (int i = 0; i < pile.Count; i++) {
+            AddLast(card.Value);
+            card = card.Next;
         }
     }
 }

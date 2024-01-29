@@ -1,6 +1,6 @@
 namespace EgyptianRatScrew.CardGame.Cards;
 
-public enum CardFace {
+public enum CardSuit {
     DIAMOND,
     CLUB,
     HEART,
