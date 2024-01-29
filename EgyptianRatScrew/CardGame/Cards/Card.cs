@@ -1,6 +1,6 @@
 using System;
 
-namespace EgyptianRatScrew.Card;
+namespace EgyptianRatScrew.CardGame.Cards;
 
 public struct Card {
     readonly CardFace face;
@@ -10,6 +10,10 @@ public struct Card {
     {
         this.face = face;
         this.value = value;
+    }
+
+    public bool SameValueAs(Card other) {
+        return this.value == other.value;
     }
 
     public override string ToString() => $"{value} OF {face}S";

@@ -1,4 +1,4 @@
-namespace EgyptianRatScrew.Card;
+namespace EgyptianRatScrew.CardGame.Cards;
 
 public enum CardFace {
     DIAMOND,

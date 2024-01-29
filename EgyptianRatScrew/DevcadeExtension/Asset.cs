@@ -1,6 +1,7 @@
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+
+namespace EgyptianRatScrew.DevcadeExtension;
 
 public static class Asset {
     public static Texture2D PlayerCircle;

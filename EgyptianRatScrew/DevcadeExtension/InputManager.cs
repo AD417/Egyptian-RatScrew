@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using Devcade;
 using System.Linq;
 
-namespace EgyptianRatScrew;
+namespace EgyptianRatScrew.DevcadeExtension;
 
 static class InputManager {
     private static readonly Dictionary<Input.ArcadeButtons, Action> OnPress = new();

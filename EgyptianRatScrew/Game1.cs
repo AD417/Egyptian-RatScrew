@@ -1,9 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Devcade;
-using EgyptianRatScrew.Card;
 using System;
+
+using Devcade;
+using EgyptianRatScrew.CardGame.Cards;
+using EgyptianRatScrew.DevcadeExtension;
 
 namespace EgyptianRatScrew
 {

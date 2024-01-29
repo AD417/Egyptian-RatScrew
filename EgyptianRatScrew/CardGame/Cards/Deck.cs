@@ -1,34 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace EgyptianRatScrew.Card;
+namespace EgyptianRatScrew.CardGame.Cards;
 
 public class Deck : LinkedList<Card> {
-    /// <summary>
-    /// Shuffles the deck in-place.
-    /// </summary>
-    public void Shuffle() {
-        // https://stackoverflow.com/questions/35628552/shuffle-a-linkedlist
-        // Take all the nodes, and put them into an array. 
-        if (Count < 2) return;
-        Random generator = new Random();
-        var result = new LinkedListNode<Card>[Count];
-        int i = 0;
-        for (var node = First; node != null; node = node.Next) {
-            int j = generator.Next(i + 1);
-            if (i != j) result[i] = result[j];
-            result[j] = node;
-            i++;
-        }
-
-        // Then overwrite the linked list with the shuffled list. 
-        Clear();
-        AddFirst(result[0]);
-        for (i = 1; i < result.Length; i++) {
-            AddAfter(result[i-1], result[i]);
-        }
-    }
-
     /// <summary>
     /// Generates a random list containing all the cards in a standard
     /// deck of cards. The size of this list is a multiple of 52, based on
@@ -62,6 +37,39 @@ public class Deck : LinkedList<Card> {
         return cards;
     }
 
+    public Card? PlayCard() {
+        if (Count == 0) return null;
+
+        Card playedCard = First.Value;
+        RemoveFirst();
+        return playedCard;
+    }
+
+    /// <summary>
+    /// Shuffles the deck in-place.
+    /// </summary>
+    public void Shuffle() {
+        // https://stackoverflow.com/questions/35628552/shuffle-a-linkedlist
+        // Take all the nodes, and put them into an array. 
+        if (Count < 2) return;
+        Random generator = new Random();
+        var result = new LinkedListNode<Card>[Count];
+        int i = 0;
+        for (var node = First; node != null; node = node.Next) {
+            int j = generator.Next(i + 1);
+            if (i != j) result[i] = result[j];
+            result[j] = node;
+            i++;
+        }
+
+        // Then overwrite the linked list with the shuffled list. 
+        Clear();
+        AddFirst(result[0]);
+        for (i = 1; i < result.Length; i++) {
+            AddAfter(result[i-1], result[i]);
+        }
+    }
+
     /// <summary>
     /// Take the current deck, and deal it into a numnber of smaller decks
     /// for some number of players. 
@@ -92,5 +100,24 @@ public class Deck : LinkedList<Card> {
         }
 
         return splitDecks;
+    }
+
+    public void TakeCard(Card? card) {
+        if (card == null) return;
+        AddLast((Card)card);
+    }
+
+    /// <summary>
+    /// Takes all the cards in the provided pile, and appends them to the end
+    /// of this one. This is an in-place operation for this Deck that does not
+    /// affect the contents of the pile the cards are taken from. 
+    /// </summary>
+    /// <param name="pile">
+    ///     A second "deck" of cards to add to the end of this one. 
+    /// </param>
+    public void TakeAll(Deck pile) {
+        for (var card = pile.First; card != null; card = card.Next) {
+            pile.AddLast(card.Value);
+        }
     }
 }
