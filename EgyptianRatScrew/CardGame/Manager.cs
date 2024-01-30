@@ -110,7 +110,7 @@ public class Manager {
     private void UpdateTurn() {
         do { 
             Turn++; 
-            Turn %= PlayerCount; 
+            Turn %= PlayerCount;
         } while (players[Turn].Count == 0);
     }
 
@@ -122,10 +122,20 @@ public class Manager {
     ///     True iff the pile can be slapped in its current configuration. 
     ///     False otherwise.
     /// </returns>
-    public bool CanSlapPile() {
+    public bool CanSlapPile(int playerId) {
         // Contains the full Brandreth ruleset. 
         // TODO: prune this ruleset based on what the players want.
         if (Pile.Count == 0) return false;
+
+        // Face card challenges
+        if (
+            InChallenge && 
+            PlayerChallenging == playerId && 
+            ChallengeAttemptsLeft == 0
+        ) {
+            return true;
+        }
+
         LinkedListNode<Card> pileIndex = Pile.Last;
         Card top = pileIndex.Value;
 
@@ -170,7 +180,11 @@ public class Manager {
     public GameState PlayCard(int playerId) {
         Deck player = players[playerId];
         if (Turn != playerId) {
-            burn.TakeCard(player.PlayCard());
+            Penalize(playerId);
+            return GameState.PENALTY;
+        }
+        if (InChallenge && ChallengeAttemptsLeft == 0) {
+            Penalize(playerId);
             return GameState.PENALTY;
         }
         if (player.Count == 0) {
@@ -181,18 +195,19 @@ public class Manager {
 
         Card played = player.PlayCard().Value;
         Pile.TakeCard(played);
+
+        if (played.IsChallengeCard()) {
+            InChallenge = true;
+            PlayerChallenging = Turn;
+            ChallengeAttemptsLeft = played.ChallengesAllowed();
+            UpdateTurn();
+            return GameState.CHALLENGE;
+        } else if (InChallenge) {
+            ChallengeAttemptsLeft--;
+            return GameState.CHALLENGE;
+        }
+
         UpdateTurn();
-
-        // if (played.IsChallengeCard()) {
-        //     InChallenge = true;
-        //     PlayerChallenging = Turn;
-        //     ChallengeAttemptsLeft = played.ChallengesAllowed();
-        //     UpdateTurn();
-        // }
-        // if (!InChallenge) {
-        //     UpdateTurn();
-        // }
-
         return GameState.NORMAL;
     }
 
@@ -205,14 +220,11 @@ public class Manager {
     /// </param>
     /// <returns></returns>
     public GameState SlapPile(int playerId) {
-        Deck player = players[playerId];
-        if (CanSlapPile()) {
+        if (CanSlapPile(playerId)) {
             TakePile(playerId);
-            Turn = playerId;
             return GameState.PILE_TAKEN;
         } else {
-            Card? penalty = player.PlayCard();
-            burn.TakeCard(penalty);
+            Penalize(playerId);
             return GameState.PENALTY;
         }
     }
@@ -230,6 +242,8 @@ public class Manager {
         player.TakeAll(Pile);
         player.TakeAll(burn);
         ResetPiles();
+        InChallenge = false;
+        Turn = playerId;
     }
 
     /// <summary>

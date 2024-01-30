@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 
 using Devcade;
-using EgyptianRatScrew.CardGame.Cards;
+using EgyptianRatScrew.CardGame;
 using EgyptianRatScrew.DevcadeExtension;
 
 namespace EgyptianRatScrew
@@ -19,8 +19,9 @@ namespace EgyptianRatScrew
 		/// </summary>
 		private Rectangle windowSize;
 
-		private int x = 0;
-		private int y = 0;
+		private static readonly int PLAYERS = 4;
+
+		private Manager manager = new Manager(PLAYERS, 1);
 
 		
 		/// <summary>
@@ -54,38 +55,33 @@ namespace EgyptianRatScrew
 			_graphics.ApplyChanges();
 #endif	
 			#endregion
-			
-			// TODO: Add your initialization logic here
-			InputManager.SetWhileHeld(Input.ArcadeButtons.StickUp, () => y--);
-			InputManager.SetWhileHeld(Input.ArcadeButtons.StickDown, () => y++);
-			InputManager.SetWhileHeld(Input.ArcadeButtons.StickLeft, () => x--);
-			InputManager.SetWhileHeld(Input.ArcadeButtons.StickRight, () => x++);
-			InputManager.SetOnRelease(Input.ArcadeButtons.A1, () => { x = 0; y = 0; });
-			InputManager.MapKeyToButton(Keys.W, Input.ArcadeButtons.StickUp);
-			InputManager.MapKeyToButton(Keys.A, Input.ArcadeButtons.StickLeft);
-			InputManager.MapKeyToButton(Keys.S, Input.ArcadeButtons.StickDown); 
-			InputManager.MapKeyToButton(Keys.D, Input.ArcadeButtons.StickRight);
-			InputManager.MapKeyToButton(Keys.R, Input.ArcadeButtons.A1);
-
-			Deck initial = Deck.GenerateFullDeck();
-			Console.WriteLine("Initial Deck: ");
-			foreach (var card in initial) {
-				Console.WriteLine(card);
-			}
-
-			Deck[] decks = initial.DealAll();
-			Console.WriteLine("\nDeck 1:");
-			foreach (var card in decks[0]) {
-				Console.WriteLine(card);
-			}
-			Console.WriteLine("\nDeck 2:");
-			foreach (var card in decks[1]) {
-				Console.WriteLine(card);
-			}
 
 			windowSize = GraphicsDevice.Viewport.Bounds;
 			
+			// TODO: Add your initialization logic here
+			SetupInputs();
+			
 			base.Initialize();
+		}
+
+		private void SetupInputs() {
+			InputManager.MapKeyToButton(Keys.Q, Input.ArcadeButtons.A1);
+			InputManager.MapKeyToButton(Keys.W, Input.ArcadeButtons.A2);
+			InputManager.MapKeyToButton(Keys.E, Input.ArcadeButtons.A3);
+			InputManager.MapKeyToButton(Keys.R, Input.ArcadeButtons.A4);
+			InputManager.MapKeyToButton(Keys.A, Input.ArcadeButtons.B1);
+			InputManager.MapKeyToButton(Keys.S, Input.ArcadeButtons.B2);
+			InputManager.MapKeyToButton(Keys.D, Input.ArcadeButtons.B3);
+			InputManager.MapKeyToButton(Keys.F, Input.ArcadeButtons.B4);
+
+			InputManager.SetOnPress(Input.ArcadeButtons.A1, () => Slap(0));
+			InputManager.SetOnPress(Input.ArcadeButtons.A2, () => Slap(1));
+			InputManager.SetOnPress(Input.ArcadeButtons.A3, () => Slap(2));
+			InputManager.SetOnPress(Input.ArcadeButtons.A4, () => Slap(3));
+			InputManager.SetOnPress(Input.ArcadeButtons.B1, () => Play(0));
+			InputManager.SetOnPress(Input.ArcadeButtons.B2, () => Play(1));
+			InputManager.SetOnPress(Input.ArcadeButtons.B3, () => Play(2));
+			InputManager.SetOnPress(Input.ArcadeButtons.B4, () => Play(3));
 		}
 
 		/// <summary>
@@ -97,6 +93,46 @@ namespace EgyptianRatScrew
 
 			Asset.LoadContent(Content);
 		}
+
+
+		private void Slap(int playerId) {
+			DisplayOutput(playerId, manager.SlapPile(playerId));
+		}
+
+		private void Play(int playerId) {
+			DisplayOutput(playerId, manager.PlayCard(playerId));
+		}
+
+		private void DisplayOutput(int playerId, GameState state) {
+			if (state == GameState.PILE_TAKEN) {
+				Console.WriteLine($"Player {playerId} takes the pile!");
+				for (int i = 0; i < PLAYERS; i++) {
+					Console.WriteLine($"Player {i} has {manager.players[i].Count} cards");
+				}
+				Console.WriteLine($"Player {manager.Turn} to play.");
+				return;
+			}
+			if (state == GameState.PENALTY) {
+				Console.WriteLine(
+					$"Illegal move. Player {playerId} burns a card."
+				);
+				return;
+			}
+			if (manager.Pile.Count > 0) {
+        		Console.WriteLine($"The last card played was the {manager.LastCard()}");
+			}
+			if (state == GameState.CHALLENGE) {
+				Console.WriteLine($"Player {manager.Turn} has {manager.ChallengeAttemptsLeft} chances left!");
+			}
+			// if (state == GameState.CHALLENGE_FAILED) {
+			// 	Console.WriteLine($"Player {manager.PlayerChallenging} takes the pile!");
+			// 	for (int i = 0; i < PLAYERS; i++) {
+			// 		Console.WriteLine($"Player {i} has {manager.players[i].Count} cards");
+			// 	}
+			// }
+			Console.WriteLine($"Player {manager.Turn} to play.");
+		}
+
 
 		/// <summary>
 		/// Your main update loop. This runs once every frame, over and over.
@@ -133,7 +169,7 @@ namespace EgyptianRatScrew
 			// Batches all the draw calls for this frame, and then performs them all at once
 			_spriteBatch.Begin();
 			// TODO: Add your drawing code here
-			_spriteBatch.Draw(Asset.PlayerCircle, new Vector2(x, y), Color.White);
+			_spriteBatch.Draw(Asset.PlayerCircle, new Vector2(0, 0), Color.White);
 			
 			_spriteBatch.End();
 
