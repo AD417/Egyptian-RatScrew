@@ -6,6 +6,7 @@ using System;
 using Devcade;
 using EgyptianRatScrew.CardGame;
 using EgyptianRatScrew.DevcadeExtension;
+using System.Collections.Generic;
 
 namespace EgyptianRatScrew
 {
@@ -22,6 +23,8 @@ namespace EgyptianRatScrew
 		private static readonly int PLAYERS = 4;
 
 		private Manager manager = new Manager(PLAYERS, 1);
+
+		private List<CardAnimation> displayedCards = new();
 
 		
 		/// <summary>
@@ -96,11 +99,20 @@ namespace EgyptianRatScrew
 
 
 		private void Slap(int playerId) {
-			DisplayOutput(playerId, manager.SlapPile(playerId));
+			GameState result = manager.SlapPile(playerId);
+			DisplayOutput(playerId, result);
+
+			if (result == GameState.PILE_TAKEN) displayedCards.Clear();
 		}
 
 		private void Play(int playerId) {
-			DisplayOutput(playerId, manager.PlayCard(playerId));
+			GameState result = manager.PlayCard(playerId);
+			DisplayOutput(playerId, result);
+
+			if (result != GameState.PENALTY) {
+				displayedCards.Add(new CardAnimation(manager.LastCard(), new Vector2(100, 900)));
+			}
+
 		}
 
 		private void DisplayOutput(int playerId, GameState state) {
@@ -169,7 +181,10 @@ namespace EgyptianRatScrew
 			// Batches all the draw calls for this frame, and then performs them all at once
 			_spriteBatch.Begin();
 			// TODO: Add your drawing code here
-			_spriteBatch.Draw(Asset.PlayerCircle, new Vector2(0, 0), Color.White);
+			foreach (CardAnimation anim in displayedCards) {
+				anim.Draw(_spriteBatch);
+				anim.Tick(gameTime.ElapsedGameTime);
+			}
 			
 			_spriteBatch.End();
 

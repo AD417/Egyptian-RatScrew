@@ -3,18 +3,18 @@ using System;
 namespace EgyptianRatScrew.CardGame.Cards;
 
 public struct Card {
-    readonly CardSuit suit;
-    readonly int value;
+    public readonly CardSuit Suit;
+    public readonly int Value;
 
     public Card(CardSuit suit, int value)
     {
         if (value < 0 || value > 13) throw new ArgumentException($"Invali value: {value}");
-        this.suit = suit;
-        this.value = value;
+        Suit = suit;
+        Value = value;
     }
 
     public string ValueName() {
-        return value switch {
+        return Value switch {
             1  => "ACE",
             2  => "TWO",
             3  => "THREE",
@@ -40,7 +40,7 @@ public struct Card {
     ///     True iff the card is a face card or ace; false otherwise.
     /// </returns>
     public bool IsChallengeCard() {
-        return value == 1 || value > 10;
+        return Value == 1 || Value > 10;
     }
 
     /// <summary>
@@ -55,8 +55,8 @@ public struct Card {
     /// </returns>
     public int ChallengesAllowed() {
         if (!IsChallengeCard()) return int.MaxValue;
-        if (value == 1) return 4;
-        return value - 10;
+        if (Value == 1) return 4;
+        return Value - 10;
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public struct Card {
     /// </param>
     /// <returns></returns>
     public bool SameValueAs(Card other) {
-        return this.value == other.value;
+        return this.Value == other.Value;
     }
 
     /// <summary>
@@ -90,8 +90,8 @@ public struct Card {
     ///     True iff both values are represented on the cards; false otherwise.
     /// </returns>
     public bool CardsHaveValues(Card other, int firstValue, int secondValue) {
-        if (value == firstValue && other.value == secondValue) return true;
-        return value == secondValue && other.value == firstValue;
+        if (Value == firstValue && other.Value == secondValue) return true;
+        return Value == secondValue && other.Value == firstValue;
     }
 
     /// <summary>
@@ -127,14 +127,14 @@ public struct Card {
     ///     True iff the cards form a sequence; false otherwise.
     /// </returns>
     public bool MakesSequence(Card second, Card third) {
-        if (value+1 == second.value && second.value == third.value-1) {
+        if (Value+1 == second.Value && second.Value == third.Value-1) {
             return true;
         }
-        if (value-1 == second.value && second.value == third.value+1) {
+        if (Value-1 == second.Value && second.Value == third.Value+1) {
             return true;
         }
         return false;
     }
 
-    public override string ToString() => $"{ValueName()} OF {suit}S";
+    public override string ToString() => $"{ValueName()} OF {Suit}S";
 }
