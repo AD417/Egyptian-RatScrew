@@ -20,11 +20,28 @@ namespace EgyptianRatScrew
 		/// </summary>
 		private Rectangle windowSize;
 
+		/// <summary>
+		/// The number of players in this game.
+		/// </summary>
 		private static readonly int PLAYERS = 4;
 
-		private Manager manager = new Manager(PLAYERS, 1);
+		/// <summary>
+		/// The internal game state. 
+		/// </summary>
+		private readonly Manager manager = new Manager(PLAYERS, 1);
 
+		/// <summary>
+		/// The list of all displayed Cards. Allows all the played cards
+		/// this round to be rendered on top of each other.
+		/// </summary>
 		private List<CardAnimation> displayedCards = new();
+
+		/// <summary>
+		/// The amount of time since the last player played a card. Balances
+		/// the game by preventing a player from spamming cards, so someone can
+		/// actually slap the deck between plays. 
+		/// </summary>
+		private TimeSpan timeSinceLastAction = TimeSpan.Zero;
 
 		
 		/// <summary>
@@ -68,6 +85,8 @@ namespace EgyptianRatScrew
 		}
 
 		private void SetupInputs() {
+			// Q  W  E  R
+			//  A  S  D  F
 			InputManager.MapKeyToButton(Keys.Q, Input.ArcadeButtons.A1);
 			InputManager.MapKeyToButton(Keys.W, Input.ArcadeButtons.A2);
 			InputManager.MapKeyToButton(Keys.E, Input.ArcadeButtons.A3);
@@ -81,6 +100,7 @@ namespace EgyptianRatScrew
 			InputManager.SetOnPress(Input.ArcadeButtons.A2, () => Slap(1));
 			InputManager.SetOnPress(Input.ArcadeButtons.A3, () => Slap(2));
 			InputManager.SetOnPress(Input.ArcadeButtons.A4, () => Slap(3));
+
 			InputManager.SetOnPress(Input.ArcadeButtons.B1, () => Play(0));
 			InputManager.SetOnPress(Input.ArcadeButtons.B2, () => Play(1));
 			InputManager.SetOnPress(Input.ArcadeButtons.B3, () => Play(2));
@@ -97,6 +117,9 @@ namespace EgyptianRatScrew
 			Asset.LoadContent(Content);
 		}
 
+		private bool canPlay() {
+			return timeSinceLastAction > TimeSpan.FromSeconds(0.2);
+		}
 
 		private void Slap(int playerId) {
 			GameState result = manager.SlapPile(playerId);
@@ -106,13 +129,14 @@ namespace EgyptianRatScrew
 		}
 
 		private void Play(int playerId) {
+			if (!canPlay()) return;
 			GameState result = manager.PlayCard(playerId);
 			DisplayOutput(playerId, result);
 
 			if (result != GameState.PENALTY) {
-				displayedCards.Add(new CardAnimation(manager.LastCard(), new Vector2(100, 900)));
+				displayedCards.Add(new CardAnimation(manager.LastCard(), Anim.PLAYER_POSITION[playerId]));
 			}
-
+			timeSinceLastAction = TimeSpan.Zero;
 		}
 
 		private void DisplayOutput(int playerId, GameState state) {
@@ -166,6 +190,7 @@ namespace EgyptianRatScrew
 
 			// TODO: Add your update logic here
 			InputManager.TickActions();
+			timeSinceLastAction += gameTime.ElapsedGameTime;
 
 			base.Update(gameTime);
 		}
@@ -181,6 +206,11 @@ namespace EgyptianRatScrew
 			// Batches all the draw calls for this frame, and then performs them all at once
 			_spriteBatch.Begin();
 			// TODO: Add your drawing code here
+
+			for (int i = 0; i < PLAYERS; i++) {
+				_spriteBatch.Draw(Asset.Decks, Anim.PLAYER_POSITION[i], Asset.DeckPosition(i), Color.White);
+			}
+
 			foreach (CardAnimation anim in displayedCards) {
 				anim.Draw(_spriteBatch);
 				anim.Tick(gameTime.ElapsedGameTime);

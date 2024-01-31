@@ -13,8 +13,6 @@ class CardAnimation {
     /// </summary>
     private static readonly TimeSpan MAX_ANIMATION_TIME = 
             TimeSpan.FromSeconds(0.4);
-    
-    private static readonly Vector2 FINAL_POSITION = new(200, 200);
 
     /// <summary>
     /// Obligatory source of random numbers.
@@ -29,15 +27,17 @@ class CardAnimation {
     /// <summary>
     /// The rotation to use when the animation time is 0.
     /// </summary>
-    private readonly float initialRotation;
+    private float initialRotation;
     /// <summary>
     /// The position to use when the animation time is 0.
     /// </summary>
-    private readonly Vector2 initialPosition;
+    private Vector2 initialPosition;
     /// <summary>
     /// The rotation to use when the animation is complete.
     /// </summary>
-    private readonly float finalRotation;
+    private float finalRotation;
+
+    private Vector2 finalPosition = Anim.PILE_POSITION;
 
     /// <summary>
     /// The card to display.
@@ -113,9 +113,9 @@ class CardAnimation {
     /// </returns>
     private Vector2 CurrentPosition() {
 
-        if (IsComplete()) return FINAL_POSITION - RotationDisplacement();
+        if (IsComplete()) return finalPosition - RotationDisplacement();
 
-        Vector2 dPos = FINAL_POSITION - initialPosition;
+        Vector2 dPos = finalPosition - initialPosition;
         float percent = (float) PercentComplete();
         float interpolation = 1 - (1 - percent) * (1 - percent);
         dPos = new Vector2(dPos.X * interpolation, dPos.Y * interpolation);
