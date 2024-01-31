@@ -31,10 +31,17 @@ namespace EgyptianRatScrew
 		private readonly Manager manager = new Manager(PLAYERS, 1);
 
 		/// <summary>
-		/// The list of all displayed Cards. Allows all the played cards
+		/// The list of all cards on the pile. Allows all the played cards
 		/// this round to be rendered on top of each other.
 		/// </summary>
-		private List<CardAnimation> displayedCards = new();
+		private List<CardAnimation> pileCards = new();
+
+		/// <summary>
+		/// The list of all cards are being collected by some player. 
+		/// These cards have different animation properties to the cards on the
+		/// pile, and get deleted once they are collected together.
+		/// </summary>
+		private List<CardAnimation> collectedCards = new();
 
 		/// <summary>
 		/// The amount of time since the last player played a card. Balances
@@ -125,7 +132,13 @@ namespace EgyptianRatScrew
 			GameState result = manager.SlapPile(playerId);
 			DisplayOutput(playerId, result);
 
-			if (result == GameState.PILE_TAKEN) displayedCards.Clear();
+			if (result != GameState.PILE_TAKEN) return;
+			
+			foreach (CardAnimation card in pileCards) {
+				card.SendToPlayer(playerId);
+				collectedCards.Add(card);
+			}
+			pileCards.Clear();
 		}
 
 		private void Play(int playerId) {
@@ -134,7 +147,11 @@ namespace EgyptianRatScrew
 			DisplayOutput(playerId, result);
 
 			if (result != GameState.PENALTY) {
-				displayedCards.Add(new CardAnimation(manager.LastCard(), Anim.PLAYER_POSITION[playerId]));
+				pileCards.Add(new CardAnimation(
+					manager.LastCard(), 
+					Anim.PLAYER_POSITION[playerId], 
+					playerId
+				));
 			}
 			timeSinceLastAction = TimeSpan.Zero;
 		}
@@ -207,11 +224,19 @@ namespace EgyptianRatScrew
 			_spriteBatch.Begin();
 			// TODO: Add your drawing code here
 
+			foreach (CardAnimation anim in collectedCards) {
+				anim.Draw(_spriteBatch);
+				anim.Tick(gameTime.ElapsedGameTime);
+			}
+			if (collectedCards.Count > 0 && collectedCards[0].IsComplete()) {
+				collectedCards.Clear();
+			}
+
 			for (int i = 0; i < PLAYERS; i++) {
 				_spriteBatch.Draw(Asset.Decks, Anim.PLAYER_POSITION[i], Asset.DeckPosition(i), Color.White);
 			}
 
-			foreach (CardAnimation anim in displayedCards) {
+			foreach (CardAnimation anim in pileCards) {
 				anim.Draw(_spriteBatch);
 				anim.Tick(gameTime.ElapsedGameTime);
 			}

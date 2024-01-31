@@ -17,6 +17,12 @@ public static class Asset {
     public static Texture2D Cards;
 
     /// <summary>
+    /// The sprite atlas containing the backside of cards based on each player.
+    /// Each card is 88px wide and 124px tall.
+    /// </summary>
+    public static Texture2D CardBacks;
+
+    /// <summary>
     /// The sprite atlas containing the 4 decks for the players. 
     /// Each deck is 88px wide and 140px tall. 
     /// </summary>
@@ -36,6 +42,7 @@ public static class Asset {
     public static void LoadContent(ContentManager content) {
         PlayerCircle = content.Load<Texture2D>("PlayerCircle");
         Cards = content.Load<Texture2D>("All-88x124");
+        CardBacks = content.Load<Texture2D>("Card_Back_All-88x124");
         Decks = content.Load<Texture2D>("Card_DeckAll-88x140");
     }
 

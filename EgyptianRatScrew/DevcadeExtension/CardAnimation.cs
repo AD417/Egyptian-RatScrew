@@ -44,12 +44,23 @@ class CardAnimation {
     /// </summary>
     private readonly Card card;
 
-    public CardAnimation(Card card, Vector2 initialPosition) {
+    /// <summary>
+    /// The id of the player who played this card.
+    /// </summary>
+    private readonly int playerId;
+
+    private bool isOnPile = true;
+
+    public CardAnimation(Card card, Vector2 initialPosition, int playerId) {
         this.card = card;
         this.initialPosition = initialPosition;
         initialRotation = (float)RANDOM.NextDouble() * MathF.Tau;
         finalRotation = (float)RANDOM.NextDouble() * 0.1F * MathF.Tau + initialRotation;
+        this.playerId = playerId;
     }
+
+
+
 
     /// <summary>
     /// Determines whether the animation is complete. This means the animation
@@ -58,7 +69,7 @@ class CardAnimation {
     /// <returns>
     ///     True iff the animation is complete, false otherwise.
     /// </returns>
-    private bool IsComplete() {
+    public bool IsComplete() {
         return animationTime > MAX_ANIMATION_TIME;
     }
 
@@ -94,6 +105,7 @@ class CardAnimation {
     ///     rotation seem to be from the cnter of the card. 
     /// </returns>
     private Vector2 RotationDisplacement() {
+        if (!isOnPile) return Vector2.Zero;
         // There's probably still a glaring bug in this code, 
         // but it works respectably, so I'll take it.
         float CARD_DIM_ATAN = 0.953604935255F;
@@ -124,8 +136,8 @@ class CardAnimation {
     }
 
     /// <summary>
-    /// Determine the location of the specific card to draw on the sprite atlas
-    /// containing all playing cards. 
+    /// Determine the location of the specific card to draw from the sprite 
+    /// atlas containing all playing cards. 
     /// </summary>
     /// <returns>
     ///     A rectangle containing the pixel bounds of the card that this 
@@ -137,6 +149,43 @@ class CardAnimation {
         int top = (int)card.Suit * CARD_HEIGHT;
         int left = (card.Value-1) * CARD_WIDTH;
         return new Rectangle(left, top, CARD_WIDTH, CARD_HEIGHT);
+    }
+
+    /// <summary>
+    /// Determine the location of the specific card back to draw from the sprite 
+    /// atlas containing all card backsides.
+    /// </summary>
+    /// <returns>
+    ///     A rectangle containing the pixel bounds of the card that this 
+    ///     animation draws.
+    /// </returns>
+    private Rectangle AtlasCardBackRegion() {
+        int CARD_WIDTH = 88;
+        int CARD_HEIGHT = 124;
+        int top = playerId / 2 * CARD_HEIGHT;
+        int left = playerId % 2 * CARD_WIDTH;
+        return new Rectangle(left, top, CARD_WIDTH, CARD_HEIGHT);
+    }
+
+    /// <summary>
+    /// Change the animation properties of this card to move it towards a player's pile.
+    /// </summary>
+    /// <param name="playerId">
+    ///     The id of the player who is collecting the cards. 
+    /// </param>
+    public void SendToPlayer(int playerId) {
+        // TODO: make this thing generate a wholly new card animation. This is
+        // a bit excessive, honestly.
+
+        // Position is dependent on rotation, so change the position first.
+        initialPosition = CurrentPosition() + RotationDisplacement();
+        initialRotation = CurrentRotation();
+
+        finalPosition = Anim.PLAYER_POSITION[playerId];
+        finalRotation = MathF.Round(initialRotation / MathF.Tau)* MathF.Tau;
+
+        animationTime = TimeSpan.Zero;
+        isOnPile = false;
     }
 
     /// <summary>
@@ -157,16 +206,30 @@ class CardAnimation {
     ///     The Sprite Batch that batches this animation for this frame.
     /// </param>
     public void Draw(SpriteBatch sb) {
-        sb.Draw(
-            texture: Asset.Cards, 
-            position: CurrentPosition(), 
-            sourceRectangle: AtlasCardRegion(), 
-            color: Color.White,
-            rotation: CurrentRotation(),
-            origin: Vector2.Zero,
-            scale: 1,
-            effects: SpriteEffects.None,
-            layerDepth: 0.0f
-        );
+        if (PercentComplete() > 0.5 || !isOnPile) {
+            sb.Draw(
+                texture: Asset.Cards, 
+                position: CurrentPosition(), 
+                sourceRectangle: AtlasCardRegion(), 
+                color: Color.White,
+                rotation: CurrentRotation(),
+                origin: Vector2.Zero,
+                scale: 1,
+                effects: SpriteEffects.None,
+                layerDepth: 1f
+            );
+        } else {
+            sb.Draw(
+                texture: Asset.CardBacks, 
+                position: CurrentPosition(), 
+                sourceRectangle: AtlasCardBackRegion(), 
+                color: Color.White,
+                rotation: CurrentRotation(),
+                origin: Vector2.Zero,
+                scale: 1,
+                effects: SpriteEffects.None,
+                layerDepth: 1.0f
+            );
+        }
     }
 }
