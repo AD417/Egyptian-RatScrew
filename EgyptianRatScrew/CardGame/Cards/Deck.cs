@@ -35,6 +35,15 @@ public class Deck : LinkedList<Card> {
         return cards;
     }
 
+    /// <summary>
+    /// Attempt to play a card from this deck.
+    /// This operation removes the topmost card from the deck and returns it.
+    /// This operation assumes the deck contains at least one card; if there
+    /// are no cards available to play, then `null` will be returned instead.
+    /// </summary>
+    /// <returns>
+    ///     The topmost card, or null if the deck contains no cards.
+    /// </returns>
     public Card? PlayCard() {
         if (Count == 0) return null;
 
@@ -100,6 +109,14 @@ public class Deck : LinkedList<Card> {
         return splitDecks;
     }
 
+    /// <summary>
+    /// Accept a card into the deck. This card gets added to the bottom of the 
+    /// deck, such that all other cards must be played before this one is 
+    /// played again. If the provided card is null, nothing is added. 
+    /// </summary>
+    /// <param name="card">
+    ///     The card to add to the bottom, if not null.
+    /// </param>
     public void TakeCard(Card? card) {
         if (card == null) return;
         AddLast((Card)card);

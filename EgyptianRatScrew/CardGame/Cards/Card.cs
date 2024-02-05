@@ -2,18 +2,57 @@ using System;
 
 namespace EgyptianRatScrew.CardGame.Cards;
 
-public struct Card {
+public readonly struct Card {
+    /// <summary>
+    /// The card's suit, as a <see cref="CardSuit"/>.
+    /// </summary>
     public readonly CardSuit Suit;
+    /// <summary>
+    /// An integer value representing the face value of the card. Ranges from 
+    /// 1 to 13. Values 1, 11, 12, and 13 are given special display names for
+    /// their values, depicted as Ace, Jack, Queen, and King respectively.
+    /// <para />
+    /// This value should always be between 1 and 13 inclusive. 
+    /// </summary>
     public readonly int Value;
 
-    public Card(CardSuit suit, int value)
+    /// <summary>
+    /// Create a new card instance with the given suit and value parameters.
+    /// </summary>
+    /// <param name="suit">
+    ///     The suit of the card. 
+    /// </param>
+    /// <param name="value">
+    ///     The face value of this card. Must be betwee 1 (Ace) and 13 (King),
+    ///     inclusive.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    ///     If the provided face value is not in bounds.
+    /// </exception>
+    internal Card(CardSuit suit, int value)
     {
-        if (value < 0 || value > 13) throw new ArgumentException($"Invali value: {value}");
+        if (value < 1 || value > 13) {
+            throw new ArgumentException(
+                $"Invalid value for card: '{value}'" + 
+                "must be between 1 and 13 inclusive."
+            );
+        }
         Suit = suit;
         Value = value;
     }
 
-    public string ValueName() {
+    /// <summary>
+    /// Determine the name of the value of this card, for use in debug display
+    /// or for other cases where a card image is unavailable.
+    /// </summary>
+    /// <returns>
+    ///     A string in all-caps giving the string name of the card's value, 
+    ///     such as `ACE`, `SIX`, or `KING`. 
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    ///     If the value stored in this card is invalid.
+    /// </exception>
+    public readonly string ValueName() {
         return Value switch {
             1  => "ACE",
             2  => "TWO",
@@ -28,7 +67,9 @@ public struct Card {
             11 => "JACK",
             12 => "QUEEN",
             13 => "KING",
-            _  => throw new InvalidOperationException("Illegal card value"),
+            _  => throw new InvalidOperationException(
+                $"Illegal card value: {Value}"
+            ),
         };
     }
 
@@ -39,7 +80,7 @@ public struct Card {
     /// <returns>
     ///     True iff the card is a face card or ace; false otherwise.
     /// </returns>
-    public bool IsChallengeCard() {
+    public readonly bool IsChallengeCard() {
         return Value == 1 || Value > 10;
     }
 
@@ -53,7 +94,7 @@ public struct Card {
     ///     this is not a challenge card, returns an arbitrarily large number
     ///     instead.
     /// </returns>
-    public int ChallengesAllowed() {
+    public readonly int ChallengesAllowed() {
         if (!IsChallengeCard()) return int.MaxValue;
         if (Value == 1) return 4;
         return Value - 10;
@@ -67,7 +108,7 @@ public struct Card {
     ///     The other card to check for value equality.
     /// </param>
     /// <returns></returns>
-    public bool SameValueAs(Card other) {
+    public readonly bool SameValueAs(Card other) {
         return this.Value == other.Value;
     }
 
@@ -89,7 +130,7 @@ public struct Card {
     /// <returns>
     ///     True iff both values are represented on the cards; false otherwise.
     /// </returns>
-    public bool CardsHaveValues(Card other, int firstValue, int secondValue) {
+    public readonly bool CardsHaveValues(Card other, int firstValue, int secondValue) {
         if (Value == firstValue && other.Value == secondValue) return true;
         return Value == secondValue && other.Value == firstValue;
     }
@@ -99,7 +140,7 @@ public struct Card {
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    public bool MakesSixtyNine(Card other) {
+    public readonly bool MakesSixtyNine(Card other) {
         return CardsHaveValues(other, 6, 9);
     }
 
@@ -108,7 +149,7 @@ public struct Card {
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    public bool MakesKingQueen(Card other) {
+    public readonly bool MakesKingQueen(Card other) {
         return CardsHaveValues(other, 12, 13);
     }
 
@@ -126,7 +167,7 @@ public struct Card {
     /// <returns>
     ///     True iff the cards form a sequence; false otherwise.
     /// </returns>
-    public bool MakesSequence(Card second, Card third) {
+    public readonly bool MakesSequence(Card second, Card third) {
         if (Value+1 == second.Value && second.Value == third.Value-1) {
             return true;
         }
@@ -136,5 +177,5 @@ public struct Card {
         return false;
     }
 
-    public override string ToString() => $"{ValueName()} OF {Suit}S";
+    public override readonly string ToString() => $"{ValueName()} OF {Suit}S";
 }
