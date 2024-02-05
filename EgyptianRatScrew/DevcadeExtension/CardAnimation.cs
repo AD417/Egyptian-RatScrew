@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace EgyptianRatScrew.DevcadeExtension;
 
-class CardAnimation {
+public abstract class CardAnimation {
     /// <summary>
     /// The amount of time that an animation is allowed to take. If the amount
     /// of time recorded is greater than this, then the animation is forcefully
@@ -17,51 +17,44 @@ class CardAnimation {
     /// <summary>
     /// Obligatory source of random numbers.
     /// </summary>
-    private static readonly Random RANDOM = new(0);
+    protected static readonly Random RANDOM = new(0);
 
     /// <summary>
     /// The amount of time this card has existed for.
     /// </summary>
-    public TimeSpan animationTime = TimeSpan.Zero;
+    private TimeSpan animationTime = TimeSpan.Zero;
 
     /// <summary>
     /// The rotation to use when the animation time is 0.
     /// </summary>
-    private float initialRotation;
+    private readonly float initialRotation;
+    /// <summary>
+    /// The rotation to use when the animation is complete.
+    /// </summary>
+    private readonly float finalRotation;
+
     /// <summary>
     /// The position to use when the animation time is 0.
     /// </summary>
     private Vector2 initialPosition;
-    /// <summary>
-    /// The rotation to use when the animation is complete.
-    /// </summary>
-    private float finalRotation;
-
-    private Vector2 finalPosition = Anim.PILE_POSITION;
+    private Vector2 finalPosition;
 
     /// <summary>
     /// The card to display.
     /// </summary>
     private readonly Card card;
 
-    /// <summary>
-    /// The id of the player who played this card.
-    /// </summary>
-    private readonly int playerId;
-
-    private bool isOnPile = true;
-
-    public CardAnimation(Card card, Vector2 initialPosition, int playerId) {
+    public CardAnimation(
+        float initialRotation, float finalRotation, 
+        Vector2 initialPosition, Vector2 finalPosition,
+        Card card
+    ) {
+        this.initialRotation = initialRotation;
+        this.finalRotation = finalRotation;
+        this.initialPosition = initialPosition;
+        this.finalPosition = finalPosition;
         this.card = card;
-        this.initialPosition = initialPosition + Anim.CARD_OFFSET;
-        this.finalPosition = Anim.PILE_POSITION;
-        initialRotation = (float)RANDOM.NextDouble() * MathF.Tau;
-        finalRotation = (float)RANDOM.NextDouble() * 0.1F * MathF.Tau + initialRotation;
-        this.playerId = playerId;
     }
-
-
-
 
     /// <summary>
     /// Determines whether the animation is complete. This means the animation
@@ -81,10 +74,32 @@ class CardAnimation {
     /// <returns>
     ///     A float between 0 and 1, inclusive.
     /// </returns>
-    private float PercentComplete() {
+    public float PercentComplete() {
         if (IsComplete()) return 1;
         return (float) (animationTime / MAX_ANIMATION_TIME);
     }
+
+    /// <summary>
+    /// Determine how far through the animation the angle should be, based on
+    /// the current percentage complete. This value should be between 0 and 1,
+    /// inclusive, and based on <see cref="PercentComplete"/>.
+    /// </summary>
+    /// <returns>
+    ///     A value between 0 and 1, inclusive, representing how close to the
+    ///     final angle this animation should be at this moment. 
+    /// </returns>
+    protected abstract float RotationInterpolationFactor();
+
+    /// <summary>
+    /// Determine how far through the animation the position should be, based
+    /// on the current percentage complete. This value should be between 
+    /// 0 and 1, inclusive, and based on <see cref="PercentComplete"/>.
+    /// </summary>
+    /// <returns>
+    ///     A value between 0 and 1, inclusive, representing how close to the
+    ///     final position this animation should be at this moment. 
+    /// </returns>
+    protected abstract float PositionInterpolationFactor();
 
     /// <summary>
     /// Determine the current rotation of the card, in radians. 
@@ -93,11 +108,7 @@ class CardAnimation {
     ///     A float with some positive rotation value based on the animation.
     /// </returns>
     private float CurrentRotation() {
-        if (IsComplete()) return finalRotation;
-        float interpolation = PercentComplete();
-        if (!isOnPile) {
-            interpolation = 1 - (1 - interpolation) * (1 - interpolation);
-        }
+        float interpolation = RotationInterpolationFactor();
         return initialRotation + (finalRotation - initialRotation) * interpolation;
     }
 
@@ -110,8 +121,6 @@ class CardAnimation {
     ///     rotation seem to be from the cnter of the card. 
     /// </returns>
     private Vector2 RotationDisplacement() {
-        if (!isOnPile) return Vector2.Zero;
-
         // The arctan of the point (-88, 124), in radians. 
         float CARD_DIM_ATAN = 2.18798771834F-MathF.PI;
         float CARD_DIM_LENGTH = 76.026311235F;
@@ -121,11 +130,6 @@ class CardAnimation {
             CARD_DIM_LENGTH * MathF.Cos(rotationAngle) - 124 * MathF.Sin(rotation),
             CARD_DIM_LENGTH * MathF.Sin(rotationAngle) + 124 * MathF.Cos(rotation)
         );
-
-        /*return new Vector2(
-            -191.133461225F * MathF.Sin(0.232288988971F + CurrentRotation()),
-            -191.133461225F * MathF.Cos(0.232288988971F + CurrentRotation())
-        ); */
     }
 
     /// <summary>
@@ -135,15 +139,86 @@ class CardAnimation {
     ///     A vector indicating where the card should be drawn on the screen.
     /// </returns>
     private Vector2 CurrentPosition() {
-
-        if (IsComplete()) return finalPosition - RotationDisplacement();
-
         Vector2 dPos = finalPosition - initialPosition;
-        float percent = (float) PercentComplete();
-        float interpolation = 1 - (1 - percent) * (1 - percent);
+        float interpolation = PositionInterpolationFactor();
+
         dPos = new Vector2(dPos.X * interpolation, dPos.Y * interpolation);
 
         return dPos + initialPosition - RotationDisplacement();
+    }
+
+    /// <summary>
+    /// Determine what image this animation should use. This should be an image
+    /// defined in the <see cref="Asset"/> static class. 
+    /// </summary>
+    /// <returns>
+    ///     The image in use by this animation.
+    /// </returns>
+    protected virtual Texture2D Image() {
+        return Asset.Cards;
+    }
+
+    /// <summary>
+    /// Determine the region of a sprite atlas, if relevant, that is used by this 
+    /// </summary>
+    /// <returns></returns>
+    protected virtual Rectangle AtlasRegion() {
+        int CARD_WIDTH = 88;
+        int CARD_HEIGHT = 124;
+        int top = (int)card.Suit * CARD_HEIGHT;
+        int left = (card.Value-1) * CARD_WIDTH;
+        return new Rectangle(left, top, CARD_WIDTH, CARD_HEIGHT);
+    }
+
+    /// <summary>
+    /// Increment the Animation time based on the amount of time that has
+    /// passed between frames.
+    /// </summary>
+    /// <param name="dt">
+    ///     The amount of time since the last time the card was drawn. 
+    /// </param>
+    public void Tick(TimeSpan dt) {
+        animationTime += dt;
+    }
+
+    /// <summary>
+    /// Draw this card to the screen.
+    /// </summary>
+    /// <param name="sb">
+    ///     The Sprite Batch that batches this animation for this frame.
+    /// </param>
+    public void Draw(SpriteBatch sb) {
+        sb.Draw(
+            texture: Image(),
+            position: CurrentPosition(),
+            sourceRectangle: AtlasRegion(),
+            color: Color.White,
+            rotation: CurrentRotation(),
+            origin: Vector2.Zero,
+            scale: Anim.SCALE_FACTOR,
+            effects: SpriteEffects.None,
+            layerDepth: 1F
+        );
+    }
+
+    /*
+    private Vector2 finalPosition = Anim.PILE_POSITION;
+
+
+    /// <summary>
+    /// The id of the player who played this card.
+    /// </summary>
+    private readonly int playerId;
+
+    private bool isOnPile = true;
+
+    public CardAnimation(Card card, Vector2 initialPosition, int playerId) {
+        this.card = card;
+        this.initialPosition = initialPosition + Anim.CARD_OFFSET;
+        this.finalPosition = Anim.PILE_POSITION;
+        initialRotation = (float)RANDOM.NextDouble() * MathF.Tau;
+        finalRotation = (float)RANDOM.NextDouble() * 0.1F * MathF.Tau + initialRotation;
+        this.playerId = playerId;
     }
 
     /// <summary>
@@ -242,5 +317,5 @@ class CardAnimation {
                 layerDepth: 1.0f
             );
         }
-    }
+    } */
 }

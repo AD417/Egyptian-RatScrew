@@ -92,6 +92,7 @@ namespace EgyptianRatScrew
 		}
 
 		private void SetupInputs() {
+			// P1 P2 P3 P4
 			// Q  W  E  R
 			//  A  S  D  F
 			InputManager.MapKeyToButton(Keys.Q, Input.ArcadeButtons.A1);
