@@ -1,4 +1,3 @@
-using EgyptianRatScrew.CardGame.Cards;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,6 +9,7 @@ public static class Asset {
     /// The player circle. A dummy test item.
     /// </summary>
     public static Texture2D PlayerCircle;
+    
     /// <summary>
     /// The sprite atlas containing all 52 cards. 
     /// Each card is 88px wide and 124px tall.

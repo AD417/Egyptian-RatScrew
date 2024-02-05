@@ -53,7 +53,8 @@ class CardAnimation {
 
     public CardAnimation(Card card, Vector2 initialPosition, int playerId) {
         this.card = card;
-        this.initialPosition = initialPosition;
+        this.initialPosition = initialPosition + Anim.CARD_OFFSET;
+        this.finalPosition = Anim.PILE_POSITION;
         initialRotation = (float)RANDOM.NextDouble() * MathF.Tau;
         finalRotation = (float)RANDOM.NextDouble() * 0.1F * MathF.Tau + initialRotation;
         this.playerId = playerId;
@@ -93,7 +94,11 @@ class CardAnimation {
     /// </returns>
     private float CurrentRotation() {
         if (IsComplete()) return finalRotation;
-        return initialRotation + (finalRotation - initialRotation) * PercentComplete();
+        float interpolation = PercentComplete();
+        if (!isOnPile) {
+            interpolation = 1 - (1 - interpolation) * (1 - interpolation);
+        }
+        return initialRotation + (finalRotation - initialRotation) * interpolation;
     }
 
     /// <summary>
@@ -106,15 +111,21 @@ class CardAnimation {
     /// </returns>
     private Vector2 RotationDisplacement() {
         if (!isOnPile) return Vector2.Zero;
-        // There's probably still a glaring bug in this code, 
-        // but it works respectably, so I'll take it.
-        float CARD_DIM_ATAN = 0.953604935255F;
+
+        // The arctan of the point (-88, 124), in radians. 
+        float CARD_DIM_ATAN = 2.18798771834F-MathF.PI;
         float CARD_DIM_LENGTH = 76.026311235F;
-        float rotationAngle = CurrentRotation() - CARD_DIM_ATAN;
+        float rotation = CurrentRotation();
+        float rotationAngle = rotation + CARD_DIM_ATAN;
         return new Vector2(
-            -CARD_DIM_LENGTH * MathF.Sin(rotationAngle),
-            +CARD_DIM_LENGTH * MathF.Cos(rotationAngle)
+            CARD_DIM_LENGTH * MathF.Cos(rotationAngle) - 124 * MathF.Sin(rotation),
+            CARD_DIM_LENGTH * MathF.Sin(rotationAngle) + 124 * MathF.Cos(rotation)
         );
+
+        /*return new Vector2(
+            -191.133461225F * MathF.Sin(0.232288988971F + CurrentRotation()),
+            -191.133461225F * MathF.Cos(0.232288988971F + CurrentRotation())
+        ); */
     }
 
     /// <summary>
