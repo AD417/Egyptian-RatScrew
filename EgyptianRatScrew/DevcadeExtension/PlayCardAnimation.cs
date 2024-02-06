@@ -1,16 +1,22 @@
 using System;
 using EgyptianRatScrew.CardGame.Cards;
-using EgyptianRatScrew.DevcadeExtension;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
-class PlayCardAnimation : CardAnimation {
+namespace EgyptianRatScrew.DevcadeExtension;
+
+public class PlayCardAnimation : CardAnimation {
     readonly int playerId;
 
     private PlayCardAnimation(
-        float initRot, float finalRot, 
-        Vector2 initPos, Vector2 finPos, 
+        float initialRotation, float finalRotation, 
+        Vector2 initialPosition, Vector2 finalPosition, 
         Card card, int playerId
-    ) : base(initRot, finalRot, initPos, finPos, card) {
+    ) : base(
+        initialRotation, finalRotation, 
+        initialPosition, finalPosition, 
+        card
+    ) {
         this.playerId = playerId;
     }
 
@@ -21,7 +27,7 @@ class PlayCardAnimation : CardAnimation {
     /// <param name="card"></param>
     /// <param name="playerId"></param>
     /// <returns></returns>
-    private static PlayCardAnimation ForCard(Card card, int playerId) {
+    public static PlayCardAnimation For(Card card, int playerId) {
         float initialRotation = (float) RANDOM.NextDouble() * MathF.Tau;
         float finalRotation = 
                 (float) RANDOM.NextDouble() * MathF.Tau * 0.1F 
@@ -46,5 +52,20 @@ class PlayCardAnimation : CardAnimation {
         // The card moves quickly early on, and then slows down to a halt.
         float percent = PercentComplete();
         return 1 - (1 - percent) * (1 - percent);
+    }
+
+    protected override Texture2D Image() {
+        if (PercentComplete() > 0.5) return Asset.Cards;
+        return Asset.CardBacks;
+    }
+
+    protected override Rectangle AtlasRegion() {
+        if (PercentComplete() > 0.5) return base.AtlasRegion();
+
+        int CARD_WIDTH = 88;
+        int CARD_HEIGHT = 124;
+        int top = playerId / 2 * CARD_HEIGHT;
+        int left = playerId % 2 * CARD_WIDTH;
+        return new Rectangle(left, top, CARD_WIDTH, CARD_HEIGHT);
     }
 }

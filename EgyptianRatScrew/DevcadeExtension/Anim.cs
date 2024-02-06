@@ -25,6 +25,8 @@ static class Anim {
     /// </summary>
     public static readonly Vector2 PILE_POSITION = new(210, 450);
 
+    public static readonly Vector2 BURN_POSITION = new(210, 750);
+
     /// <summary>
     /// The position of the top left corner of each of the decks on the screen,
     /// before scaling. 

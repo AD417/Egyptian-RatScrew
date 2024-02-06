@@ -7,6 +7,7 @@ using Devcade;
 using EgyptianRatScrew.CardGame;
 using EgyptianRatScrew.DevcadeExtension;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EgyptianRatScrew
 {
@@ -133,11 +134,13 @@ namespace EgyptianRatScrew
 			GameState result = manager.SlapPile(playerId);
 			DisplayOutput(playerId, result);
 
-			if (result != GameState.PILE_TAKEN) return;
+			if (result != GameState.PILE_TAKEN) {
+				
+			}
 			
-			foreach (CardAnimation card in pileCards) {
-				card.SendToPlayer(playerId);
-				collectedCards.Add(card);
+			foreach (CardAnimation cardAnim in pileCards) {
+				//card.SendToPlayer(playerId);
+				collectedCards.Add(TakeCardAnimation.For(cardAnim, playerId));
 			}
 			pileCards.Clear();
 		}
@@ -148,11 +151,9 @@ namespace EgyptianRatScrew
 			DisplayOutput(playerId, result);
 
 			if (result != GameState.PENALTY) {
-				pileCards.Add(new CardAnimation(
-					manager.LastCard(), 
-					Anim.PLAYER_POSITION[playerId], 
-					playerId
-				));
+				pileCards.Add(
+					PlayCardAnimation.For(manager.LastCard(), playerId)
+				);
 			}
 			timeSinceLastAction = TimeSpan.Zero;
 		}
@@ -229,9 +230,9 @@ namespace EgyptianRatScrew
 				anim.Draw(_spriteBatch);
 				anim.Tick(gameTime.ElapsedGameTime);
 			}
-			if (collectedCards.Count > 0 && collectedCards[0].IsComplete()) {
-				collectedCards.Clear();
-			}
+			// if (collectedCards.Count > 0 && collectedCards[0].IsComplete()) {
+			// 	collectedCards.Clear();
+			// }
 
 			for (int i = 0; i < PLAYERS; i++) {
 				_spriteBatch.Draw(Asset.Decks, Anim.PLAYER_POSITION[i], Asset.DeckPosition(i), Color.White);

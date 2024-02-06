@@ -42,7 +42,7 @@ public abstract class CardAnimation {
     /// <summary>
     /// The card to display.
     /// </summary>
-    private readonly Card card;
+    internal readonly Card card;
 
     public CardAnimation(
         float initialRotation, float finalRotation, 
@@ -107,7 +107,7 @@ public abstract class CardAnimation {
     /// <returns>
     ///     A float with some positive rotation value based on the animation.
     /// </returns>
-    private float CurrentRotation() {
+    internal float CurrentRotation() {
         float interpolation = RotationInterpolationFactor();
         return initialRotation + (finalRotation - initialRotation) * interpolation;
     }
@@ -138,7 +138,7 @@ public abstract class CardAnimation {
     /// <returns>
     ///     A vector indicating where the card should be drawn on the screen.
     /// </returns>
-    private Vector2 CurrentPosition() {
+    internal Vector2 CurrentPosition() {
         Vector2 dPos = finalPosition - initialPosition;
         float interpolation = PositionInterpolationFactor();
 

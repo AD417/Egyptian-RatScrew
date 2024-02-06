@@ -104,6 +104,16 @@ public class Manager {
     }
 
     /// <summary>
+    /// Get the last card burned by a player (on top of the burn pile).
+    /// </summary>
+    /// <returns>
+    ///     The card on top of the burn pile.
+    /// </returns>
+    public Card LastBurnedCard() {
+        return burn.Last.Value;
+    }
+
+    /// <summary>
     /// Set <c>Turn</c> to the next player to act after the current turn. This
     /// skips players who have run out of cards. 
     /// </summary>
