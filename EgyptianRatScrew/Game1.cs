@@ -135,7 +135,9 @@ namespace EgyptianRatScrew
 			DisplayOutput(playerId, result);
 
 			if (result != GameState.PILE_TAKEN) {
-				
+				pileCards.Add(
+					BurnCardAnimation.For(manager.LastBurnedCard(), playerId)
+				);
 			}
 			
 			foreach (CardAnimation cardAnim in pileCards) {
@@ -153,6 +155,10 @@ namespace EgyptianRatScrew
 			if (result != GameState.PENALTY) {
 				pileCards.Add(
 					PlayCardAnimation.For(manager.LastCard(), playerId)
+				);
+			} else {
+				pileCards.Add(
+					BurnCardAnimation.For(manager.LastBurnedCard(), playerId)
 				);
 			}
 			timeSinceLastAction = TimeSpan.Zero;
