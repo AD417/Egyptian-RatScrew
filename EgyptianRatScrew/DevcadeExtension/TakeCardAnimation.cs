@@ -22,10 +22,13 @@ public class TakeCardAnimation : CardAnimation
     }
     
     public static TakeCardAnimation For(CardAnimation anim, int playerId) {
+        float finalRotation = anim.CurrentRotation();
+        finalRotation /= MathF.PI;
+        finalRotation = MathF.Round(finalRotation) * MathF.PI;
         return new TakeCardAnimation(
             initialRotation: anim.CurrentRotation(),
-            // TODO: make finalRotation round to closest rotation within Pi/4.
-            finalRotation: 0.0F,
+            // TODO: make finalRotation round to closest rotation within Pi/2.
+            finalRotation: finalRotation,
             initialPosition: anim.CurrentPosition(),
             finalPosition: Anim.PLAYER_POSITION[playerId] + Anim.CARD_OFFSET,
             card: anim.card,

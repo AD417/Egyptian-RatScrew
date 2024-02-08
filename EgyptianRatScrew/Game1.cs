@@ -7,7 +7,6 @@ using Devcade;
 using EgyptianRatScrew.CardGame;
 using EgyptianRatScrew.DevcadeExtension;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EgyptianRatScrew
 {
@@ -131,6 +130,8 @@ namespace EgyptianRatScrew
 		}
 
 		private void Slap(int playerId) {
+			if (manager.Pile.Count == 0) return;
+			
 			GameState result = manager.SlapPile(playerId);
 			DisplayOutput(playerId, result);
 
@@ -138,6 +139,7 @@ namespace EgyptianRatScrew
 				pileCards.Add(
 					BurnCardAnimation.For(manager.LastBurnedCard(), playerId)
 				);
+				return;
 			}
 			
 			foreach (CardAnimation cardAnim in pileCards) {
