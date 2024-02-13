@@ -47,19 +47,18 @@ public class PlayCardAnimation : CardAnimation {
         return PercentComplete();
     }
 
-    protected override float PositionInterpolationFactor()
-    {
+    protected override float PositionInterpolationFactor() {
         // The card moves quickly early on, and then slows down to a halt.
         float percent = PercentComplete();
         return 1 - (1 - percent) * (1 - percent);
     }
 
-    protected override Texture2D Image() {
+    internal override Texture2D Image() {
         if (PercentComplete() > 0.5) return Asset.Cards;
         return Asset.CardBacks;
     }
 
-    protected override Rectangle AtlasRegion() {
+    internal override Rectangle AtlasRegion() {
         if (PercentComplete() > 0.5) return base.AtlasRegion();
 
         int CARD_WIDTH = 88;

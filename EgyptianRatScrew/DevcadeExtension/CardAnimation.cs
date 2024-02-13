@@ -133,18 +133,27 @@ public abstract class CardAnimation {
     }
 
     /// <summary>
-    /// Determine the Vector2 position on the screen to draw the card.
+    /// Determine the position of the center of this card. This is different
+    /// from the 
     /// </summary>
-    /// <returns>
-    ///     A vector indicating where the card should be drawn on the screen.
-    /// </returns>
-    internal Vector2 CurrentPosition() {
+    /// <returns></returns>
+    internal Vector2 CenterPosition() {
         Vector2 dPos = finalPosition - initialPosition;
         float interpolation = PositionInterpolationFactor();
 
         dPos = new Vector2(dPos.X * interpolation, dPos.Y * interpolation);
 
-        return dPos + initialPosition - RotationDisplacement();
+        return dPos + initialPosition;
+    }
+
+    /// <summary>
+    /// Determine the Vector2 position on the screen to draw the card.
+    /// </summary>
+    /// <returns>
+    ///     A vector indicating where the card should be drawn on the screen.
+    /// </returns>
+    private Vector2 CurrentPosition() {
+        return CenterPosition() - RotationDisplacement();
     }
 
     /// <summary>
@@ -154,7 +163,7 @@ public abstract class CardAnimation {
     /// <returns>
     ///     The image in use by this animation.
     /// </returns>
-    protected virtual Texture2D Image() {
+    internal virtual Texture2D Image() {
         return Asset.Cards;
     }
 
@@ -162,7 +171,7 @@ public abstract class CardAnimation {
     /// Determine the region of a sprite atlas, if relevant, that is used by this 
     /// </summary>
     /// <returns></returns>
-    protected virtual Rectangle AtlasRegion() {
+    internal virtual Rectangle AtlasRegion() {
         int CARD_WIDTH = 88;
         int CARD_HEIGHT = 124;
         int top = (int)card.Suit * CARD_HEIGHT;

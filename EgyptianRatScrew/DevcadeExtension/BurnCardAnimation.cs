@@ -24,7 +24,7 @@ class BurnCardAnimation : CardAnimation
     public static BurnCardAnimation For(Card card, int playerId) {
         float initialRotation = (float) RANDOM.NextDouble() * MathF.Tau;
         float finalRotation = 
-                (float) RANDOM.NextDouble() * MathF.Tau * 0.1F 
+                (float) RANDOM.NextDouble() * MathF.Tau * 0.25F 
                 + initialRotation;
         
         Vector2 initialPosition = Anim.PLAYER_POSITION[playerId];
@@ -37,24 +37,20 @@ class BurnCardAnimation : CardAnimation
         );
     }
 
-    protected override float PositionInterpolationFactor()
-    {
+    protected override float PositionInterpolationFactor() {
         float factor = 1 - PercentComplete();
         return 1 - factor * factor;
     }
 
-    protected override float RotationInterpolationFactor()
-    {
+    protected override float RotationInterpolationFactor() {
         return PercentComplete();
     }
 
-    protected override Texture2D Image()
-    {
+    internal override Texture2D Image() {
         return Asset.CardBacks;
     }
 
-    protected override Rectangle AtlasRegion()
-    {
+    internal override Rectangle AtlasRegion() {
         int CARD_WIDTH = 88;
         int CARD_HEIGHT = 124;
         int top = playerId / 2 * CARD_HEIGHT;
